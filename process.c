@@ -21,10 +21,10 @@ int main(int agrc, char * argv[])
     //TODO it needs to get the remaining time from somewhere
     //remainingtime = ??;
     remainingtime = runningtime;
-  //  printf("Starting process with ID = %d - Remaining time = %d\n", getpid(), remainingtime);
+   printf("Starting process with ID = %d - Remaining time = %d\n", getpid(), remainingtime);
 
      int prev = getClk();
- // printf("Start run ID: %d at time: %d and rem time = %d\n", getpid(), getClk(), remainingtime);
+//  printf("Start run ID: %d at time: %d and rem time = %d\n", getpid(), getClk(), remainingtime);
   while (remainingtime > 0 )
       {      
         int curr = getClk();
@@ -32,11 +32,12 @@ int main(int agrc, char * argv[])
         {
           prev = getClk();   
           remainingtime --;   
-      //    printf("Process ID = %d - Remaining time = %d - Current time = %d\n", getpid(), remainingtime, getClk());
+         printf("Process ID = %d - Remaining time = %d - Current time = %d\n", getpid(), remainingtime, getClk());
         }
       }
-   // printf("Process with pid = %d - Finish time = %d\n",getpid(), prev);
-    kill(getppid(), SIGUSR1);
+   printf("Process with pid = %d - Finish time = %d\n",getpid(), prev);
+    // kill(getppid(), SIGUSR1);
+    kill(getppid(), SIGUSR2);
     destroyClk(false);
     raise(SIGTERM);
     
@@ -46,24 +47,7 @@ int main(int agrc, char * argv[])
 void SIGCONThandler(int signum)
 {
   printf("Process ID = %d Started running at time = %d\n", getpid(), getClk());
-  signal(SIGCONT, SIGCONThandler);
-   int prev = getClk();
- // printf("Start run ID: %d at time: %d and rem time = %d\n", getpid(), getClk(), remainingtime);
-  while (remainingtime > 0 )
-      {      
-        int curr = getClk();
-        if (curr != prev)
-        {
-          prev = getClk();   
-          remainingtime --;   
-      //    printf("Process ID = %d - Remaining time = %d - Current time = %d\n", getpid(), remainingtime, getClk());
-        }
-      }
-   // printf("Process with pid = %d - Finish time = %d\n",getpid(), prev);
-    kill(getppid(), SIGUSR1);
-    destroyClk(false);
-    raise(SIGTERM);
- 
+  signal(SIGCONT, SIGCONThandler); 
 }
 
 void sigtstphandler(int signum)

@@ -63,7 +63,7 @@ process* dequeue(Queue* pq) {
     pq->front = pq->front->next;
     process* dequeuedProcess = temp->nodeProcess;
     temp = NULL;
-    free(temp);
+    // free(temp);
     return dequeuedProcess;
 }
 
