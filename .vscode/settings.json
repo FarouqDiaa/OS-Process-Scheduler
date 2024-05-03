@@ -59,7 +59,8 @@
   "files.associations": {
     "priorityqueue.h": "c",
     "system_error": "c",
-    "limits": "c"
+    "limits": "c",
+    "headers.h": "c"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }
