@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     signal(SIGUSR2, processTerminated); // to handle the termination of a process
     algorithm = atoi(argv[1]);
     processCount = atoi(argv[2]);
-    quantum = atoi(argv[2]);
+    quantum = atoi(argv[3]);
     finishedQueue = createQueue();
     connectWithGenerator();
     getAlgorithm();
@@ -311,15 +311,29 @@ signal(SIGUSR1, finishedPhandler);
 void RRScheduler(int quantum)
 {
   Q = createQueue();
-  printf("Queue created with quantum=%d\n", quantum);
+  printf("Queue created with quantum = %d\n", quantum);
   int counter = 0;
   while (true)
   {
+    if (!isEmpty(Q))
+    {
+      runningProcess = dequeue(Q);
+
+      int remainingtime = runningProcess->remainingtime;
+      int runtime;
+      
+      if (quantum < remainingtime)
+        runtime = quantum;
+      else
+        runtime = remainingtime;
+
+      kill(runningProcess->realPid, SIGCONT);
+      sleep(runtime);
+    }
 
     // This loop checks for th incoming processes, if there is no incoming processes, it will break and continue running the current process
-    while(processCount > 0)
+    if (processCount > 0)
     {
-      printf("Waiting...\n");
       sch_rec_val = msgrcv(sch_msgq_id, &SCH_message, sizeof(SCH_message.arrivedProcess), getpid(), IPC_NOWAIT);
       if (sch_rec_val != -1)
       {
@@ -337,39 +351,21 @@ void RRScheduler(int quantum)
         newprocess->realPid = pid;                             // set the real id of the forked process
         normalQenqueue(Q, newprocess);
       }
-      
-      break;
     }
 
-    if (!isEmpty(Q))
+    if (runningProcess)
     {
-      runningProcess = dequeue(Q);
-
-      if (runningProcess)
+      // when a process fnishes it should notify the scheduler on termination, the scheduler does NOT terminate the process.
+      if (flag)
       {
-        int remainingtime = runningProcess->remainingtime;
-        int runtime;
-        
-        if (quantum < remainingtime)
-          runtime = quantum;
-        else
-          runtime = remainingtime;
-
-        kill(runningProcess->realPid, SIGCONT);
-        sleep(runtime);
-
-        // when a process fnishes it should notify the scheduler on termination, the scheduler does NOT terminate the process.
-        if (flag)
-        {
-          kill(runningProcess->realPid, SIGSTOP);
-          normalQenqueue(Q, runningProcess);
-        }
-        else
-        {
-          free(runningProcess);
-          processCount--;
-          flag = 1;
-        }
+        kill(runningProcess->realPid, SIGSTOP);
+        normalQenqueue(Q, runningProcess);
+      }
+      else
+      {
+        free(runningProcess);
+        processCount--;
+        flag = 1;
       }
     }
 
