@@ -7,7 +7,6 @@ int remainingtime;
 int prev, curr;
 
 void SIGCONThandler(int signum);
-void sigtstphandler(int signum);
 
 int main(int agrc, char *argv[])
 {
@@ -26,21 +25,18 @@ int main(int agrc, char *argv[])
   while (remainingtime > 0)
   {
     curr = getClk();
-    if(curr != prev)
+    if(curr > prev)
     {
       // printf("Process ID = %d prev = %d curr = %d\n", getpid(), prev, curr);
-      if (curr > prev)
-      {
-        remainingtime--;
-        printf("Process ID = %d - Remaining time = %d - Current time = %d\n", getpid(), remainingtime, getClk());
-      }
+      remainingtime--;
+      printf("Process ID = %d - Remaining time = %d - Current time = %d\n", getpid(), remainingtime, getClk());
       prev = getClk();
     }
   }
   printf("Process with pid = %d - Finish time = %d\n", getpid(), prev);
   prev = getClk();
-  // kill(getppid(), SIGUSR1);
-  kill(getppid(), SIGUSR2);
+  kill(getppid(), SIGUSR1);
+  // kill(getppid(), SIGUSR2);
   destroyClk(false);
   raise(SIGTERM);
 
@@ -50,9 +46,4 @@ int main(int agrc, char *argv[])
 void SIGCONThandler(int signum)
 {
   prev = curr = getClk();
-}
-
-void sigtstphandler(int signum)
-{
-  raise(SIGSTOP);
 }

@@ -331,12 +331,15 @@ void RRScheduler(int quantum)
       sleep(runtime);
     }
 
-    // This loop checks for th incoming processes, if there is no incoming processes, it will break and continue running the current process
+    // This loop checks for the incoming processes, if there is no incoming processes, it will break and continue running the current process
     if (processCount > 0)
     {
-      sch_rec_val = msgrcv(sch_msgq_id, &SCH_message, sizeof(SCH_message.arrivedProcess), getpid(), IPC_NOWAIT);
-      if (sch_rec_val != -1)
+      int lastID = -1;
+      while ((msgrcv(sch_msgq_id, &SCH_message, sizeof(SCH_message.arrivedProcess), getpid(), IPC_NOWAIT)) != -1)
       {
+        if (lastID == SCH_message.arrivedProcess.id)
+          continue;
+
         printf("Received\n");
         process *newprocess = createProcess(SCH_message.arrivedProcess.id, SCH_message.arrivedProcess.priority,
         SCH_message.arrivedProcess.arrivaltime, SCH_message.arrivedProcess.runningtime);
@@ -350,6 +353,9 @@ void RRScheduler(int quantum)
         int pid = forkNewProcess(runnungtimearg, arrivaltime, newprocess->runningtime); // create a real process
         newprocess->realPid = pid;                             // set the real id of the forked process
         normalQenqueue(Q, newprocess);
+        // printf("%d\n", newprocess->id);
+
+        lastID = newprocess->id;
       }
     }
 
@@ -366,6 +372,7 @@ void RRScheduler(int quantum)
         free(runningProcess);
         processCount--;
         flag = 1;
+        // printf("Done cleaning\n");
       }
     }
 
